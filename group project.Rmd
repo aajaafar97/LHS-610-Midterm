@@ -1,0 +1,64 @@
+---
+title: "Group Project"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+average_pm<- read_csv("average_PM.csv")
+CA_yearly_asthma_bycounty<-read_csv("CA_yearly_asthma_bycounty.csv")
+```
+
+
+```{r}
+average_pm<-average_pm %>%
+  gather(Year,pm_value,`1999`:`2016`)
+```
+```{r}
+average_pm=average_pm %>%
+  mutate(pm_value=as.numeric(pm_value))
+```
+```{r}
+average_pm=average_pm %>%
+  mutate(Year=as.numeric(Year))
+```
+
+```{r}
+full_frame<-inner_join(average_pm,CA_yearly_asthma_bycounty)
+```
+
+#Remove irrelevant columns
+```{r}
+adjusted_frame<- full_frame[setdiff(colnames(full_frame), c('1999':'2010','LGHC Indicator ID','LGHC Indicator Name','LGHC Target Rate','2017','2018','Numerator'))]
+adjusted_frame<-adjusted_frame%>%
+  filter(!str_detect(County,'California'))%>%
+  filter(!str_detect(County,'United States'))
+
+```
+
+
+
+#Filter the frame to only include stratifcation by "All Ages"
+```{r}
+frame_all_ages<-adjusted_frame %>%
+  filter(Strata_Name=="All Ages")
+```
+
+
+```{r}
+frame_all_ages %>%
+  ggplot(aes(x=pm_value, y=Rate))+
+  facet_wrap(~Year)+
+  geom_point()+
+  geom_smooth(method=lm)
+  
+
+```
+
+
+
